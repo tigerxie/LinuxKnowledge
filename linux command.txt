@@ -1,0 +1,662 @@
+linux command
+
+文件目录操作
+
+ls
+
+ls -l -R ./  ： 列出当前目录的所有文件和目录的详细信息
+
+-l ：文件名、文件权限、所有者、文件大小等信息详细列出来
+
+-R ：-recursive 同时列出所有子目录层
+
+ls -l A* ：列出当前目录所有以"A"开头的目录的详细信息
+
+ls -F ./ | grep /$ ：列出当前目录下的子目录
+
+-F ：--classify 文件（可/不可执行 ）和目录分类
+
+$  #锚定行的结束 如：'grep$'匹配所有以grep结尾的行。    
+
+ls -l ./ | grep "^d" ：列出当前目录下的子目录详细信息
+
+^  #锚定行的开始 如：'^grep'匹配所有以grep开头的行。    
+
+ls -ltr A* ：列出目前工作目录下所有名称是"A" 开头的档案，愈新的排愈后面
+
+-t ：-time 以文件修改时间排序
+
+ls -AF 
+
+-A ： 类似 -a 但不显示 ./ 和 ../
+
+ls -l * | grep "^-" | wc -l ：文件个数
+
+wc ：word count ,print newline, word, and byte counts for each file, -l newline
+
+ls -l * | grep "^d" | wc -l ：目录个数
+
+ls | sed "s:^:`pwd`/:" ：列出文件的绝对路径
+
+find $PWD -maxdepth 1 | xargs ls -ld
+
+列出当前目录下的所有文件（包括隐藏文件）的绝对路径， 对目录不做递归
+
+find $PWD | xargs ls -ld : 递归
+
+ls -tl --time-style=full-iso
+
+指定文件时间输出格式
+
+ls -ctl --time-style=long-iso
+
+alias ls="ls --color"
+
+cd
+
+cd
+
+cd ~
+
+cd /
+
+cd -
+
+cd !$
+
+pwd
+
+pwd -P
+
+pwd -L
+
+cp
+
+copy files and directories
+
+cp -p
+
+same as --preserve=mode, ownership, timestamps
+
+mkdir
+
+make directories
+
+mkdir -p
+
+--parents : no error if existing, make parent directories as needed
+
+head
+
+output the first part of files
+
+head -1 == head -n 3
+
+head -c 20 log2014.log
+
+显示文件前n个字节
+
+head -c -32 log2014.log
+
+文件的除了最后n个字节以外的内容 
+
+head -n -6 log2014.log
+
+输出文件除了最后n行的全部内容
+
+文件查找命令
+
+find pathname -options [-print -exec -ok ...]
+
+search for files in a directory hierarchy
+
+find -atime -n
+
+查找系统中n*24小时访问的文件
+
+find . -name "*.log"
+
+关键字查找
+
+find . -perm 755
+
+根据权限查找文件
+
+find . -type f -name "*.xml"
+
+按类型查找
+
+-type  查找某一类型的文件，诸如：
+b - 块设备文件。
+d - 目录。
+c - 字符设备文件。
+p - 管道文件。
+l - 符号链接文件。
+f - 普通文件。
+
+find . -type d | sort
+
+查找当前目录下的文件夹并排序
+
+find . -size +1024c -print
+
+-size : 文件长度，ｃ　表示以字节计
+
+-print : 输出到标准输出
+
+find . -maxdepth 1
+
+Descend at most levels of directions below the starting-points
+
+find 之exec
+
+-exec 后面跟command命令，以 ； 结束，考虑到各个系统中 ； 的意义不同，所以在前面加上 \ 
+
+{} 表示 find 出来的文件名
+
+find . -type f -exec ls -l {} \;
+
+find . -type f -mtime +14 -exec rm {} \; 
+
+在目录中查找更改时间在n日以前的文件并删除它们
+
+find . -name "*.log" -mtime +5 -ok rm {} \;
+
+在目录中查找更改时间在n日以前的文件并删除它们，在删除之前先给出提示
+
+find . -name "pom.xml" -exec grep "canal" {} \;
+
+find . -type f -name "*.log" -exec mv {} ./ \;
+
+find . -type f -print | xargs file
+
+xargs file ：测试它们分别属于哪类文件
+
+find / -name "core" | xargs echo "" > ./core.log
+
+find 之 xargs
+
+build and execute command lines from standard input
+
+cat 2.log | xargs
+
+换行符和空白被空格取代
+
+cat 2.log | xargs -n max-args
+
+Use at most max-args arguments per command line
+
+cat 2.log | xargs -d a
+
+-d delimiter : 定界符
+
+cat xarg.log | xargs -I {} echo begin {} end
+
+-I : replace-str
+
+ls *.log | xargs -n 1 -I {} cp {} ./log
+
+多文件拷贝
+
+find . -type f -name "*.log" -print0 | xargs -0 rm -rf
+
+删除指定文件
+
+find . -type f -name "*.log" -print0 | xargs -0 wc
+
+计算文件大小
+
+find . -type f -name "*.log" -print | xargs tar -czvf log.tar.gz
+
+压缩指定文件
+
+cat url-list.txt | xargs wget -c
+
+文件目录属性
+
+linux 目录结构
+
+FHS (Filesystem Hierarchy Standard)
+
+重点在于在特点的目录下应该放置什么样的数据
+
+目录架构不变
+
+
+
+1. 可分享的
+可以分享给其他系统挂载使用的目录，所以包括执行文件与用户的邮件等数据， 是能够分享给网络上其他主机挂载用的目录
+
+2. 不可分享的
+自己机器上面运作的装置文件或者是与程序有关的socket文件等， 由于仅与自身机器有关，所以当然就不适合分享给其他主机了
+
+3. 不变的
+有些数据是不会经常变动的，跟随着distribution而不变动。 例如函式库、文件说明文件、系统管理员所管理的主机服务配置文件等等
+
+4. 可变动的
+经常改变的数据，例如登录文件、一般用户可自行收受的新闻组等
+
+目录树架构，三层
+
+一、/ (root, 根目录)： 与开机系统有关
+
+意义及内容
+
+根目录是整个系统最重要的一个目录，因为不但所有的目录都是由根目录衍生出来的， 同时根目录也与开机/还原/系统修复等动作有关
+
+根目录(/)所在分区应该越小越好， 且应用程序所安装的软件最好不要与根目录放在同一个分区内，保持根目录越小越好。 如此不但效能较佳，根目录所在的文件系统也较不容易发生问题。说白了，就是根目录和Windows的C盘一个样
+
+子目录
+
+放置档案内容
+
+/bin
+
+系统有很多放置执行档的目录，但/bin比较特殊。因为/bin放置的是在单人维护模式下还能够被操作的指令。在/bin底下的指令可以被root与一般帐号所使用，主要有：cat,chmod(修改权限), chown, date, mv, mkdir, cp, bash等等常用的指令
+
+/boot
+
+主要放置开机会使用到的档案，包括Linux核心档案以及开机选单与开机所需设定档等等。Linux kernel常用的档名为：vmlinuz ，如果使用的是grub这个开机管理程式，则还会存在/boot/grub/这个目录
+
+/dev
+
+在Linux系统上，任何装置与周边设备都是以档案的型态存在于这个目录当中。 只要通过存取这个目录下的某个档案，就等于存取某个装置。比要重要的档案有/dev/null, /dev/zero, /dev/tty , /dev/lp*, / dev/hd*, /dev/sd*等等
+
+
+/etc
+
+系统主要的设定档几乎都放置在这个目录内，例如人员的帐号密码档、各种服务的启始档等等。 一般来说，这个目录下的各档案属性是可以让一般使用者查阅的，但是只有root有权力修改。 FHS建议不要放置可执行档(binary)在这个目录中。 比较重要的档案有：/etc/inittab, /etc/init.d/, /etc/modprobe.conf, /etc/X11/, /etc/fstab, /etc/sysconfig/等等。 另外，其下重要的目录有：/etc/init.d/ ：所有服务的预设启动script都是放在这里的，例如要启动或者关闭iptables的话： /etc/init.d/iptables start、/etc/init.d/ iptables stop
+
+/etc/xinetd.d/ ：这就是所谓的super daemon管理的各项服务的设定档目录。
+
+/etc/X11/ ：与X Window有关的各种设定档都在这里，尤其是xorg.conf或XF86Config这两个X Server的设定档
+
+
+/home
+
+这是系统预设的使用者家目录(home directory)。 在你新增一个一般使用者帐号时，预设的使用者家目录都会规范到这里来。比较重要的是，家目录有两种代号： 
+~ ：代表当前使用者的家目录，而 ~guest：则代表用户名为guest的家目录
+
+/lib
+
+系统的函式库非常的多，而/lib放置的则是在开机时会用到的函式库，以及在/bin或/sbin底下的指令会呼叫的函式库而已 。 什么是函式库呢？妳可以将他想成是外挂，某些指令必须要有这些外挂才能够顺利完成程式的执行之意。 尤其重要的是/lib/modules/这个目录，因为该目录会放置核心相关的模组(驱动程式)。
+
+/media
+
+media是媒体的英文，顾名思义，这个/media底下放置的就是可移除的装置。 包括软碟、光碟、DVD等等装置都暂时挂载于此。 常见的档名有：/media/floppy, /media/cdrom等等
+
+/mnt
+
+如果妳想要暂时挂载某些额外的装置，一般建议妳可以放置到这个目录中。在古早时候，这个目录的用途与/media相同啦。 只是有了/media之后，这个目录就用来暂时挂载用了
+
+/opt
+
+这个是给第三方协力软体放置的目录 。 什么是第三方协力软体啊？举例来说，KDE这个桌面管理系统是一个独立的计画，不过他可以安装到Linux系统中，因此KDE的软体就建议放置到此目录下了。 另外，如果妳想要自行安装额外的软体(非原本的distribution提供的)，那么也能够将你的软体安装到这里来。 不过，以前的Linux系统中，我们还是习惯放置在/usr/local目录下
+
+/root
+
+系统管理员(root)的家目录。 之所以放在这里，是因为如果进入单人维护模式而仅挂载根目录时，该目录就能够拥有root的家目录，所以我们会希望root的家目录与根目录放置在同一个分区中
+
+/sbin
+
+Linux有非常多指令是用来设定系统环境的，这些指令只有root才能够利用来设定系统，其他使用者最多只能用来查询而已。放在/sbin底下的为开机过程中所需要的，里面包括了开机、修复、还原系统所需要的指令。至于某些伺服器软体程式，一般则放置到/usr/sbin/当中。至于本机自行安装的软体所产生的系统执行档(system binary)，则放置到/usr/local/sbin/当中了。常见的指令包括：fdisk, fsck, ifconfig, init, mkfs等等
+
+/srv
+
+srv可以视为service的缩写，是一些网路服务启动之后，这些服务所需要取用的资料目录。 常见的服务例如WWW, FTP等等。 举例来说，WWW伺服器需要的网页资料就可以放置在/srv/www/里面。呵呵，看来平时我们编写的代码应该放到这里了
+
+/tmp
+
+这是让一般使用者或者是正在执行的程序暂时放置档案的地方。这个目录是任何人都能够存取的，所以你需要定期的清理一下。当然，重要资料不可放置在此目录啊。 因为FHS甚至建议在开机时，应该要将/tmp下的资料都删除
+
+应放置文件内容
+
+/lost+found
+
+这个目录是使用标准的ext2/ext3档案系统格式才会产生的一个目录，目的在于当档案系统发生错误时，将一些遗失的片段放置到这个目录下。 这个目录通常会在分割槽的最顶层存在，例如你加装一个硬盘于/disk中，那在这个系统下就会自动产生一个这样的目录/disk/lost+found
+
+/proc
+
+这个目录本身是一个虚拟文件系统(virtual filesystem)喔。 他放置的资料都是在内存当中，例如系统核心、行程资讯(process)（是进程吗?）、周边装置的状态及网络状态等等。因为这个目录下的资料都是在记忆体（内存）当中，所以本身不占任何硬盘空间。比较重要的档案（目录）例如： /proc/cpuinfo, /proc/dma, /proc/interrupts, /proc/ioports, /proc/net/*等等
+
+/sys
+
+这个目录其实跟/proc非常类似，也是一个虚拟的档案系统，主要也是记录与核心相关的资讯。 包括目前已载入的核心模组与核心侦测到的硬体装置资讯等等。 这个目录同样不占硬盘容量
+
+不可与根目录分开的目录
+
+原因：根目录与开机有关，开机过程中仅有根目录被挂载，其他分区是开机后陆续被挂载。所以与开机有关的目录不能与跟目录分开
+
+/etc ：配置文件
+
+/bin ：重要的执行档
+
+/dev ：所需的装置文件
+
+/lib ：执行档所需的函数库与核心所需的模块
+
+/sbin ：重要的系统执行文件
+
+二、/usr (unix software resource)：与软件安装/执行有关
+
+透过网络进行分区的挂载，/usr 可以分享给局域网内的其他主机，
+放系统默认的软件，类似：C:\windows\ + C:\Program files\，
+系统装完，会占最多的硬盘容量
+
+应放置文件内容
+
+/usr/X11R6/
+
+为X Window System重要数据所放置的目录，之所以取名为X11R6是因为最后的X版本为第11版，且该版的第6次释出之意
+
+/usr/bin/
+
+放置用户可以使用的绝大部分命令，与 /bin 的不同之处：是否与开机过程有关
+
+/usr/include/
+
+c/c++等程序语言的档头(header)与包含档(include)放置处，当我们以tarball方式 (*.tar.gz 的方式安装软件)安装某些数据时，会使用到里头的许多包含档
+
+/usr/lib/
+
+包含各应用软件的函式库、目标文件(object file)，以及不被一般使用者惯用的执行档或脚本(script)。 某些软件会提供一些特殊的指令来进行服务器的设定，这些指令也不会经常被系统管理员操作， 那就会被摆放到这个目录下啦。要注意的是，如果你使用的是X86_64的Linux系统， 那可能会有/usr/lib64/目录产生
+
+/var (variable)：与系统运作过程有关
+
+文件打包上传、下载
+
+linux 文件权限设置
+
+磁盘存储
+
+df
+
+report file system disk space usage
+
+df
+
+显示磁盘使用情况
+
+df -i
+
+--inodes: list inode information instead of block usage
+
+df -t ext3
+
+--type=TYPE : limit listing to file systems of type TYPE
+
+Subtopic 2
+
+df -ia
+
+--all ：include dummy file systems
+
+df -T
+
+--print-type ：print file system type
+
+df -h
+
+--human-readable：print size in human readable format (e.g. , 1K 234M 2G)
+
+df -lh
+
+--local ： limit listing local file systems
+
+df -k
+
+like --block-size=1k
+
+du
+
+性能监控和优化
+
+网络
+
+scp
+
+secure copy (remote file copy program)
+
+scp是secure copy的简写，用于在Linux下进行远程拷贝文件的命令，和它类似的命令有cp，不过cp只是在本机进行拷贝不能跨服务器，而且scp传输是加密的。可能会稍微影响一下速度。当你服务器硬盘变为只读 read only system时，用scp可以帮你把文件移出来。另外，scp还非常不占资源，不会提高多少系统负荷，在这一点上，rsync就远远不及它了。虽然 rsync比scp会快一点，但当小文件众多的情况下，rsync会导致硬盘I/O非常高，而scp基本不影响系统正常使用
+
+scp是 secure copy的缩写, scp是linux系统下基于ssh登陆进行安全的远程文件拷贝命令。linux的scp命令可以在linux服务器之间复制文件和目录
+
+-1  强制scp命令使用协议ssh1  
+-2  强制scp命令使用协议ssh2  
+-4  强制scp命令只使用IPv4寻址  
+-6  强制scp命令只使用IPv6寻址  
+-B  使用批处理模式（传输过程中不询问传输口令或短语）  
+-C  允许压缩。（将-C标志传递给ssh，从而打开压缩功能）  
+-p 保留原文件的修改时间，访问时间和访问权限。  
+-q  不显示传输进度条。  
+-r  递归复制整个目录。  
+-v 详细方式显示输出。scp和ssh(1)会显示出整个过程的调试信息。这些信息用于调试连接，验证和配置问题。   
+-c cipher  以cipher将数据传输进行加密，这个选项将直接传递给ssh。   
+-F ssh_config  指定一个替代的ssh配置文件，此参数直接传递给ssh。  
+-i identity_file  从指定文件中读取传输时使用的密钥文件，此参数直接传递给ssh。    
+-l limit  限定用户所能使用的带宽，以Kbit/s为单位。     
+-o ssh_option  如果习惯于使用ssh_config(5)中的参数传递方式，   
+-P port  注意是大写的P, port是指定数据传输用到的端口号   
+-S program  指定加密传输时所使用的程序。此程序必须能够理解ssh(1)的选项。
+
+其他
+
+sed
+
+文件处理工具，本身是管道命令，主要以行为单位处理，可以将数据进行替换、删除、新增、选取等
+
+格式： 
+
+sed [-nefri] ''command"
+
+d
+
+sed '1d' ab
+
+删除第一行
+
+sed '$d' ab
+
+删除最后一行
+
+sed '1,2d' ab
+
+删除第一行到第二行
+
+sed '2,$d' ab
+
+删除第二行到最后一行
+
+p
+
+sed -n '1p' ab           #显示第一行
+
+sed -n '/ruby/p' ab    #查询包括关键字ruby所在所有行
+
+sed -n '/\$/p' ab        #查询包括关键字$所在所有行，使用反斜线\屏蔽特殊含义
+
+a
+
+sed '1a drink tea' ab  #第一行后增加字符串"drink tea"
+
+sed '1,3a drink tea' ab #第一行到第三行后增加字符串"drink tea"
+
+sed '1a drink tea\nor coffee' ab   #第一行后增加多行，使用换行符\n
+
+c
+
+sed '1c Hi' ab                #第一行代替为Hi
+
+sed '1,2c Hi' ab             #第一行到第二行代替为Hi
+
+替换一行中的某部分
+
+格式：sed 's/要替换的字符串/新的字符串/g'   （要替换的字符串可以用正则表达式）
+
+sed -n '/ruby/p' ab | sed 's/ruby/bird/g'    #替换ruby为bird
+
+sed -n '/ruby/p' ab | sed 's/ruby//g'        #删除ruby
+
+-i
+
+sed -i '$a bye' ab         #在文件ab中最后一行直接输入"bye"
+
+ 删除匹配行
+
+ sed -i '/匹配字符串/d'  filename  （注：若匹配字符串是变量，则需要“”，而不是‘’。记得好像是）
+
+替换匹配行中的某个字符串
+
+sed -i '/匹配字符串/s/替换源字符串/替换目标字符串/g' filename
+
+sed s/regexp/replacement/
+
+Attempt to match regexp against the pattern space
+
+crontab
+
+maintain crontab files for individual users
+
+crontab -l
+
+The -l option causes the current crontab to be displayed on standard output
+
+格式说明
+
+在以上各个字段中，还可以使用以下特殊字符：
+星号（*）：代表所有可能的值，例如month字段如果是星号，则表示在满足其它字段的制约条件后每月都执行该命令操作。
+逗号（,）：可以用逗号隔开的值指定一个列表范围，例如，“1,2,5,7,8,9”
+中杠（-）：可以用整数之间的中杠表示一个整数范围，例如“2-6”表示“2,3,4,5,6”
+正斜线（/）：可以用正斜线指定时间的间隔频率，例如“0-23/2”表示每两小时执行一次。同时正斜线可以和星号一起使用，例如*/10，如果用在minute字段，表示每十分钟执行一次。
+
+linux 任务调度
+
+系统任务调度
+
+系统周期性所要执行的工作，比如写缓存数据到硬盘、日志清理等。在/etc目录下有一个crontab文件，这个就是系统任务调度的配置文件
+
+
+
+第一行SHELL变量指定了系统要使用哪个shell，这里是bash，第二行PATH变量指定了系统执行命令的路径，第三行MAILTO变量指定了crond的任务执行信息将通过电子邮件发送给root用户，如果MAILTO变量的值为空，则表示不发送任务执行信息给用户
+
+用户任务调度
+
+用户定期要执行的工作，比如用户数据备份、定时邮件提醒等。用户可以使用 crontab 工具来定制自己的计划任务。所有用户定义的crontab 文件都被保存在 /var/spool/cron目录中。其文件名与用户名一致
+
+使用者权限文件
+
+/etc/cron.deny
+
+该文件中所列用户不允许使用crontab命令
+
+/etc/cron.allow
+
+该文件中所列用户允许使用crontab命令
+
+/var/spool/cron/
+
+所有用户crontab文件存放的目录,以用户名命名
+
+rpm
+
+RPM Package Manager
+
+rpm -qp $RPMS_DIR/$RPM --nosignature --qf '%{NAME}'
+
+-q : Query
+
+-p : package
+
+-f : file, Query package owning file
+
+--qf : queryformat, 
+
+ --nosignature : Don't verify package or header signatures when reading
+
+rpm -qa --nosignature --qf '%{NAME}\n'
+
+-a : --all, Query all installed packages
+
+rpm2cpio FileName.rpm | cpio -div
+
+extract
+
+ubuntu command
+
+dpkg
+
+package manager for debin
+
+-I : --info , Show information a package
+
+Subtopic 3
+
+uname
+
+uname -ar
+
+Linux tigerxie-X55VD 4.4.0-66-generic #87-Ubuntu SMP Fri Mar 3 15:29:05 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+
+more /proc/cpuinfo
+
+ps
+
+report a snapshot of the current processes
+
+ps -A
+
+-A : select all processes. Identical to -e
+
+ps -u root
+
+select by effective user ID (EUID) or name
+
+ps -ef
+
+-f : ASCII art process tree
+
+mount
+
+mount a filesystem
+
+mount [-t vfstype] [-o options] device dir
+
+1. -t vfstype ： -- types vfstype, The argument following the -t is used to indicate the filesystem type
+指定文件系统的类型，通常不必指定。mount 会自动选择正确的类型
+
+类型
+
+光盘或光盘镜像：iso9660
+DOS fat16文件系统：msdos
+Windows 9x fat32文件系统：vfat
+Windows NT ntfs文件系统：ntfs
+Mount Windows文件网络共享：smbfs
+UNIX(LINUX) 文件网络共享：nfs
+
+2. -o options : --options opts, Options are specified with a -o flag flowed by a comma separated string of options
+主要用来描述设备或档案的挂载方式。常用参数：
+
+loop：用来把一个文件当成硬盘分区挂接上系统
+ro：采用只读方式挂接设备
+rw：采用读写方式挂接设备
+iocharset：指定访问文件系统所用字符集
+
+3.device 要挂接(mount)的设备
+
+4.dir设备在系统上的挂接点(mount point)
+
+一 . 挂接光盘镜像文件
+
+1、从光盘制作光盘镜像文件。将光盘放入光驱，执行下面的命令
+     #dd if=/dev/cdrom of=/home/sunky/mydisk.iso
+2、将文件和目录制作成光盘镜像文件，执行下面的命令
+    #mkisofs -r -J -V mydisk -o /home/sunky/mydisk.iso /home/sunky/ mydir
+3、光盘镜像文件的挂接(mount)
+#mkdir /mnt/vcdrom
+注：建立一个目录用来作挂接点(mount point)
+#mount -o loop -t iso9660 /home/sunky/mydisk.iso /mnt/vcdrom
+注：使用/mnt/vcdrom就可以访问盘镜像文件mydisk.iso里的所有文件了
+
+dd
+
+convert and copy a file
