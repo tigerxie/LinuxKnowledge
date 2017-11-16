@@ -1,0 +1,72 @@
+ubuntu 环境变量设置（java，eclipse）
+
+一、设置环境变量的文件
+
+1. /etc/profile：在登录时,操作系统定制用户环境时使用的第一个文件,此文件为系统的每个用户设置环境信息,当用户第一次登录时,该文件被执行. 
+
+2./etc/environment:在登录时操作系统使用的第二个文件,系统在读取你自己的profile前,设置环境文件的环境变量 
+
+3.~/.profile:在登录时用到的第三个文件是.profile文件,每个用户都可使用该文件输入专用于自己使用的shell信息,当用户登录时,该文件仅仅执行一次!默认情况下,他设置一些环境变量,执行用户的.bashrc文件. 
+
+4./etc/bashrc:为每一个运行bash shell的用户执行此文件.当bash shell被打开时,该文件被读取.
+
+5.~/.bashrc:该文件包含专用于你的bash shell的bash信息,当登录时以及每次打开新的shell时,该该文件被读取. 
+
+二、设置环境变量的三种方式
+
+1.临时设置 
+
+export PATH=/home/yan/share/usr/local/arm/3.4.1/bin:$PATH 
+
+2.当前用户的全局设置 
+
+打开~/.bashrc，添加行：
+export PATH=/home/yan/share/usr/local/arm/3.4.1/bin:$PATH 
+
+使生效
+source .bashrc 
+
+3.所有用户的全局设置 
+
+$ vim /etc/profile
+在里面加入：
+export PATH=/home/yan/share/usr/local/arm/3.4.1/bin:$PATH
+使生效
+source profile
+测试 echo $PATH
+
+配置 java 环境变量
+
+·用文本编辑器打开/etc/profile
+　　　　·在profile文件末尾加入：
+
+　　　　　　JAVA_HOME=/usr/share/jdk1.5.0_05
+　　　　　　PATH=$JAVA_HOME/bin:$PATH
+　　　　　　CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+　　　　　　export JAVA_HOME
+　　　　　　export PATH
+　　　　　　export CLASSPATH
+
+　　　　·重新登录
+　　　　·注解
+　　　　　　a. 你要将 /usr/share/jdk1.5.0_05jdk 改为你的jdk安装目录
+　　　　　　b. linux下用冒号“:”来分隔路径
+　　　　　　c. $PATH / $CLASSPATH / $JAVA_HOME 是用来引用原来的环境变量的值
+　　　　　　　 在设置环境变量时特别要注意不能把原来的值给覆盖掉了，这是一种
+　　　　　　　 常见的错误。
+　　　　　　d. CLASSPATH中当前目录“.”不能丢,把当前目录丢掉也是常见的错误。
+　　　　　　e. export是把这三个变量导出为全局变量。
+　　　　　　f. 大小写必须严格区分。
+
+1,设置JAVA_HOME:  java的目录
+一、为了方便引用，比如，你JDK安装在C:\ProgramFiles\Java\jdk1.7.0目录里，则设置JAVA_HOME为该目录路径, 那么以后你要使用这个路径的时候, 只需输入%JAVA_HOME%即可,避免每次引用都输入很长的路径串;
+二、归一原则, 当你JDK路径被迫改变的时候, 你仅需更改JAVA_HOME的变量值即可, 否则,你就要更改任何用绝对路径引用JDK目录的文档, 要是万一你没有改全, 某个程序找不到JDK, 后果是可想而知的----系统崩溃!
+三、第三方软件会引用JAVA_HOME变量, 不然, 你将不能正常使用该软件, 以后用JAVA久了就会知道, 要是某个软件不能正常使用, 不妨想想是不是这个问题.
+2，设置CLASSPATH:   为了找到执行目标，java不同于linux上的可执行文件，linux的可执行文件提前都编译链接好了，最终是一个打包好的文件。java有一堆可执行文件：*.class文件. CLASSPATH就是约定class文件的查找路径。
+这是一个比较折磨初学者的问题, 这个变量设置的目的是为了程序能找到相应的".class"文件, 不妨举个例子: 你编译一个JAVA程序---A.java, 会得到一个A.class的类文件,你在当前目录下执行java A, 将会得到相应的结果(前提是你已经设置CLASSPATH为"."). 现在, 你把A.class移到别的目录下(例如:"e:\"), 执行java A, 将会有NoClassDefFindError的异常,原因就是找不到.class文件, 现在你把CLASSPATH增加为:".;e:\"再在任何目录下运行java A, 看看会有什么结果~~:)~~~,一切正常, java命令通过CLASSPATH找到了.class文件!
+classpath=c:\test就表示执行运行命令时去c:\test文件夹去找需要被执行的class文件
+在java5之前该路径是不能指定当前路径的,除非这样设置:classpath=.;c:\test,就表示先在当前目录找class文件,要是没找到就到c:\test去找;(当一个变量有多个值时,多个值之间是有英文的分号隔开)
+设置从当前所在目录查找(java1.5后默认):set classpath=.
+3，设置PATH:（必须设置）
+道理很简单, 你想在任何时候都使用%JAVA_HOME%\bin\java等来执行java命令吗, 当然不会, 于是, 你可以选择把%JAVA_HOME%\bin添加到PATH路径下, 这样, 我们在任何路径下就可以仅用java来执行命令了.
+(当你在命令提示符窗口输入你个代码时,操作系统会在当前目录和PATH变量目录里查找相应的应用程序,并且执行.)
